@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        input.invalid, textarea.invalid {
+            border-color: #e74c3c;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .success-message {
+            background: #27ae60;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        #fireworksCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+        }
+
+        #fireworksCanvas.active {
+            display: block;
+        }
+
+        .easter-egg-hint {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 10px;
+            color: rgba(255,255,255,0.3);
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="fireworksCanvas"></canvas>
+    
+    <div class="container">
+        <h1>Get in Touch</h1>
+        <p class="subtitle">We'd love to hear from you!</p>
+        
+        <div class="success-message" id="successMessage">
+            Message sent successfully! We'll get back to you soon.
+        </div>
+
+        <form id="contactForm">
+            <div class="form-group">
+                <label for="name">Name *</label>
+                <input type="text" id="name" name="name" required>
+                <div class="error" id="nameError">Please enter your name</div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" required>
+                <div class="error" id="emailError">Please enter a valid email address</div>
+            </div>
+
+            <div class="form-group">
+                <label for="message">Message *</label>
+                <textarea id="message" name="message" required></textarea>
+                <div class="error" id="messageError">Please enter a message</div>
+            </div>
+
+            <button type="submit">Send Message</button>
+        </form>
+    </div>
+
+    <div class="easter-egg-hint">Try the Konami code... ↑↑↓↓←→←→BA</div>
+
+    <script>
+        // Form validation and submission
+        const form = document.getElementById('contactForm');
+        const successMessage = document.getElementById('successMessage');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('name');
+            const email = document.getElementById('email');
+            const message = document.getElementById('message');
+            
+            let isValid = true;
+
+            // Validate name
+            if (name.value.trim() === '') {
+                showError('name');
+                isValid = false;
+            } else {
+                hideError('name');
+            }
+
+            // Validate email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email.value.trim())) {
+                showError('email');
+                isValid = false;
+            } else {
+                hideError('email');
+            }
+
+            // Validate message
+            if (message.value.trim() === '') {
+                showError('message');
+                isValid = false;
+            } else {
+                hideError('message');
+            }
+
+            if (isValid) {
+                // Simulate form submission
+                // Replace with your Formspree/Netlify endpoint:
+                // fetch('https://formspree.io/f/YOUR_FORM_ID', {
+                //     method: 'POST',
+                //     body: new FormData(form),
+                //     headers: { 'Accept': 'application/json' }
+                // });
+                
+                successMessage.classList.add('show');
+                form.reset();
+                
+                setTimeout(() => {
+                    successMessage.classList.remove('show');
+                }, 5000);
+            }
+        });
+
+        function showError(field) {
+            document.getElementById(field).classList.add('invalid');
+            document.getElementById(field + 'Error').classList.add('show');
+        }
+
+        function hideError(field) {
+            document.getElementById(field).classList.remove('invalid');
+            document.getElementById(field + 'Error').classList.remove('show');
+        }
+
+        // Konami Code Easter Egg
+        const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        let konamiIndex = 0;
+
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase() === 'arrowup' ? 'ArrowUp' :
+                        e.key.toLowerCase() === 'arrowdown' ? 'ArrowDown' :
+                        e.key.toLowerCase() === 'arrowleft' ? 'ArrowLeft' :
+                        e.key.toLowerCase() === 'arrowright' ? 'ArrowRight' :
+                        e.key.toLowerCase();
+
+            if (key === konamiCode[konamiIndex]) {
+                konamiIndex++;
+                if (konamiIndex === konamiCode.length) {
+                    triggerFireworks();
+                    konamiIndex = 0;
+                }
+            } else {
+                konamiIndex = 0;
+            }
+        });
+
+        // Fireworks Animation
+        const canvas = document.getElementById('fireworksCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let animationId;
+
+        // Audio Context for sound effects
+        let audioContext;
+        let fireworkInterval;
+
+        function playFireworkSound() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            // Create explosion sound using Web Audio API
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(100, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        function triggerFireworks() {
+            canvas.classList.add('active');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Launch fireworks continuously for 20 seconds
+            let launchCount = 0;
+            fireworkInterval = setInterval(() => {
+                createFirework(Math.random() * canvas.width, Math.random() * canvas.height * 0.5 + canvas.height * 0.2);
+                playFireworkSound();
+                launchCount++;
+                
+                if (launchCount >= 40) { // About 40 fireworks over 20 seconds
+                    clearInterval(fireworkInterval);
+                }
+            }, 500);
+
+            animate();
+
+            // Stop after 20 seconds and show replay prompt
+            setTimeout(() => {
+                cancelAnimationFrame(animationId);
+                canvas.classList.remove('active');
+                particles = [];
+                clearInterval(fireworkInterval);
+                showReplayPrompt();
+            }, 20000);
+        }
+
+        function showReplayPrompt() {
+            const replay = confirm('🎆 Amazing! Want to see the fireworks again?');
+            if (replay) {
+                triggerFireworks();
+            }
+        }
+
+        function createFirework(x, y) {
+            const particleCount = 100;
+            const colors = ['#ff0000', '#ff7700', '#ffdd00', '#00ff00', '#0088ff', '#9900ff', '#ff00ff'];
+            
+            for (let i = 0; i < particleCount; i++) {
+                const angle = (Math.PI * 2 * i) / particleCount;
+                const velocity = 2 + Math.random() * 3;
+                
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * velocity,
+                    vy: Math.sin(angle) * velocity,
+                    life: 1,
+                    decay: 0.005 + Math.random() * 0.01,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    size: 2 + Math.random() * 3
+                });
+            }
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach((p, index) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.05; // gravity
+                p.life -= p.decay;
+
+                if (p.life <= 0) {
+                    particles.splice(index, 1);
+                    return;
+                }
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            });
+
+            animationId = requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
